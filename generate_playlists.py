@@ -92,77 +92,6 @@ def format_extinf(channel_id, tvg_id, tvg_chno, tvg_name, tvg_logo, group_title,
 
 # --- Standard Services ---
 
-def get_anonymous_token(region: str = 'us') -> str | None:
-    headers = {
-        'Accept': 'application/json',
-        'User-Agent': USER_AGENT,
-        'X-Plex-Product': 'Plex Web',
-        'X-Plex-Version': '4.150.0',
-        'X-Plex-Client-Identifier': str(uuid.uuid4()).replace('-', ''),
-        'X-Plex-Platform': 'Web',
-    }
-    x_forward_ips = {'us': '76.81.9.69'}
-    if region in x_forward_ips: headers['X-Forwarded-For'] = x_forward_ips[region]
-    params = {'X-Plex-Product': 'Plex Web', 'X-Plex-Client-Identifier': headers['X-Plex-Client-Identifier']}
-    try:
-        resp = requests.post('https://clients.plex.tv/api/v2/users/anonymous', headers=headers, params=params, timeout=15)
-        resp.raise_for_status()
-        return resp.json().get('authToken')
-    except: return None
-
-def generate_pluto_m3u():
-    data = fetch_url('https://github.com/matthuisman/i.mjh.nz/raw/refs/heads/master/PlutoTV/.channels.json.gz', is_json=True, is_gzipped=True)
-    if not data or 'regions' not in data: return
-
-    for region in list(data['regions'].keys()) + ['all']:
-        is_all = region == 'all'
-        output_lines = [f'#EXTM3U url-tvg="https://github.com/matthuisman/i.mjh.nz/raw/master/PlutoTV/{region}.xml.gz"\n']
-        channels = {}
-
-        if is_all:
-            for r_code, r_data in data['regions'].items():
-                country_name = REGION_MAP.get(r_code.lower(), r_code.upper())
-                for c_id, c_info in r_data.get('channels', {}).items():
-                    channels[f"{c_id}-{r_code}"] = {
-                        **c_info,
-                        'original_id': c_id,
-                        'country_group': country_name,
-                        'service_group': c_info.get('group', 'Other')
-                    }
-        else:
-            region_data = data['regions'].get(region, {}).get('channels', {})
-            country_name = REGION_MAP.get(region.lower(), region.upper())
-            for c_id, c_info in region_data.items():
-                channels[c_id] = {
-                    **c_info,
-                    'original_id': c_id,
-                    'country_group': country_name,
-                    'service_group': c_info.get('group', 'Other')
-                }
-
-        sorted_channels = sorted(
-            channels.items(),
-            key=lambda x: (0 if x[1]['country_group'] in TOP_REGIONS else 1, x[1].get('name', ''))
-        )
-
-        for c_id, ch in sorted_channels:
-            group_title = ch['country_group'] if is_all else ch['service_group']
-
-            output_lines.extend([
-                format_extinf(
-                    c_id,
-                    ch['original_id'],
-                    ch.get('chno'),
-                    ch['name'],
-                    ch['logo'],
-                    group_title,
-                    ch['name']
-                ),
-                f"https://jmp2.uk/plu-{ch['original_id']}.m3u8\n"
-            ])
-
-        write_m3u_file(f"plutotv_{region}.m3u", "".join(output_lines))
-
 def generate_plex_m3u():
     data = fetch_url('https://github.com/matthuisman/i.mjh.nz/raw/refs/heads/master/Plex/.channels.json.gz', is_json=True, is_gzipped=True)
     if not data or 'channels' not in data: return
@@ -378,7 +307,6 @@ def generate_tubi_m3u():
 
 if __name__ == "__main__":
     cleanup_output_dir()
-    generate_pluto_m3u()
     generate_plex_m3u()
     generate_samsungtvplus_m3u()
     generate_tubi_m3u()
