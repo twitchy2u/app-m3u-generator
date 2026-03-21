@@ -92,6 +92,24 @@ def format_extinf(channel_id, tvg_id, tvg_chno, tvg_name, tvg_logo, group_title,
 
 # --- Standard Services ---
 
+def get_anonymous_token(region: str = 'us') -> str | None:
+    headers = {
+        'Accept': 'application/json',
+        'User-Agent': USER_AGENT,
+        'X-Plex-Product': 'Plex Web',
+        'X-Plex-Version': '4.150.0',
+        'X-Plex-Client-Identifier': str(uuid.uuid4()).replace('-', ''),
+        'X-Plex-Platform': 'Web',
+    }
+    x_forward_ips = {'us': '76.81.9.69'}
+    if region in x_forward_ips: headers['X-Forwarded-For'] = x_forward_ips[region]
+    params = {'X-Plex-Product': 'Plex Web', 'X-Plex-Client-Identifier': headers['X-Plex-Client-Identifier']}
+    try:
+        resp = requests.post('https://clients.plex.tv/api/v2/users/anonymous', headers=headers, params=params, timeout=15)
+        resp.raise_for_status()
+        return resp.json().get('authToken')
+    except: return None
+
 def generate_plex_m3u():
     data = fetch_url('https://github.com/matthuisman/i.mjh.nz/raw/refs/heads/master/Plex/.channels.json.gz', is_json=True, is_gzipped=True)
     if not data or 'channels' not in data: return
