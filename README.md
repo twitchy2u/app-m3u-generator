@@ -8,7 +8,7 @@ This repository automatically generates M3U playlist files for various free ad-s
 
 | Service | Status | Region Support | Playlist URL (M3U) | EPG / Guide Source |
 | :--- | :--- | :--- | :--- | :--- |
-| **Pluto TV** | ✅ Online | Global (14+ Regions) | `plutotv_all.m3u` | `i.mjh.nz` (Auto-embedded) |
+| **Pluto TV** | ❌ needs key | N/A | Removed | Service Discontinued |
 | **Plex TV** | ✅ Online | Global (8+ Regions) | `plex_all.m3u` | `i.mjh.nz` (Auto-embedded) |
 | **Samsung TV Plus** | ✅ Online | Global (11+ Regions) | `samsungtvplus_all.m3u` | `i.mjh.nz` (Auto-embedded) |
 | **Roku Channel** | ✅ Online | US / All | `roku_all.m3u` | `i.mjh.nz` (Auto-embedded) |
@@ -25,10 +25,6 @@ This repository automatically generates M3U playlist files for various free ad-s
 4. **The TiviMate Fix:** The workflow dynamically injects the full GitHub Raw URL into the Tubi M3U header. This ensures that players like TiviMate can find the `tubi_epg.xml` guide without manual configuration.
 
 ## ▶️ Services Included
-
-### 🔹 Pluto TV
-**File:** `plutotv_[region].m3u`
-* **Regions:** ar, br, ca, cl, de, dk, es, fr, gb, it, mx, no, se, us, and all.
 
 ### 🔹 Plex TV
 **File:** `plex_[region].m3u`
